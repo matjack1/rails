@@ -274,19 +274,13 @@ module ApplicationTests
         app.config.session_store :disabled
       end
 
-      class ::OmgController < ActionController::Base
-        def index
-          render text: Rails.application.message_verifier.generate("some_value")
-        end
-      end
+      message = app.message_verifier.generate("some_value")
 
-      get "/"
-
-      assert_equal 'some_value', Rails.application.message_verifier.verify(last_response.body)
+      assert_equal 'some_value', Rails.application.message_verifier.verify(message)
 
       secret = app.key_generator.generate_key('application verifier')
       verifier = ActiveSupport::MessageVerifier.new(secret)
-      assert_equal 'some_value', verifier.verify(last_response.body)
+      assert_equal 'some_value', verifier.verify(message)
     end
 
     test "application verifier use the configured salt" do
@@ -296,17 +290,11 @@ module ApplicationTests
         app.config.default_message_verifier_salt = 'another salt'
       end
 
-      class ::OmgController < ActionController::Base
-        def index
-          render text: Rails.application.message_verifier.generate("some_value")
-        end
-      end
-
-      get "/"
+      message = app.message_verifier.generate("some_value")
 
       secret = app.key_generator.generate_key('another salt')
       verifier = ActiveSupport::MessageVerifier.new(secret)
-      assert_equal 'some_value', verifier.verify(last_response.body)
+      assert_equal 'some_value', verifier.verify(message)
     end
 
     test "application verifier can build different verifiers" do
