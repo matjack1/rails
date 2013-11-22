@@ -86,6 +86,9 @@ application. Accepts a valid week day symbol (e.g. `:monday`).
     end
     ```
 
+* `config.default_message_verifier_salt` allows you to configure the application's
+verifier salt. Defaults to `nil`.
+
 * `config.dependency_loading` is a flag that allows you to disable constant autoloading setting it to false. It only has effect if `config.cache_classes` is true, which it is by default in production mode. This flag is set to false by `config.threadsafe!`.
 
 * `config.eager_load` when true, eager loads all registered `config.eager_load_namespaces`. This includes your application, engines, Rails frameworks and any other registered namespace.
@@ -114,8 +117,11 @@ numbers. New applications filter out passwords by adding the following `config.f
 
 * `config.logger` accepts a logger conforming to the interface of Log4r or the default Ruby `Logger` class. Defaults to an instance of `ActiveSupport::Logger`, with auto flushing off in production mode.
 
-* `config.message_verifier_salt` allows you to configure the application's
-verifier salt. Defaults to `'application verifier'`.
+* `config.message_verifier_salts` is a hash with salts for the message verifier. The key is the verifier name. Defaults to `{}`.
+
+    ```ruby
+    config.message_verifier_salts = { 'cookies' => 'cookies salt' }
+    ```
 
 * `config.middleware` allows you to configure the application's middleware. This is covered in depth in the [Configuring Middleware](#configuring-middleware) section below.
 

@@ -289,11 +289,11 @@ module ApplicationTests
       assert_equal 'some_value', verifier.verify(last_response.body)
     end
 
-    test "application verifier use the configure salt" do
+    test "application verifier use the configured salt" do
       make_basic_app do |app|
         app.config.secret_key_base = 'b3c631c314c0bbca50c1b2843150fe33'
         app.config.session_store :disabled
-        app.config.message_verifier_salt = 'another salt'
+        app.config.default_message_verifier_salt = 'another salt'
       end
 
       class ::OmgController < ActionController::Base
@@ -317,6 +317,26 @@ module ApplicationTests
 
       assert_equal Rails.application.message_verifier.object_id, Rails.application.message_verifier.object_id
       assert_not_equal Rails.application.message_verifier.object_id, Rails.application.message_verifier('text').object_id
+    end
+
+    test "application verifier use the configured salt for different verifiers" do
+      make_basic_app do |app|
+        app.config.secret_key_base = 'b3c631c314c0bbca50c1b2843150fe33'
+        app.config.session_store :disabled
+        app.config.message_verifier_salts = { 'text' => 'text salt' }
+      end
+
+      message = app.message_verifier('text').generate('some_value')
+
+      assert_equal 'some_value', app.message_verifier('text').verify(message)
+
+      secret = app.key_generator.generate_key('text salt')
+      verifier = ActiveSupport::MessageVerifier.new(secret)
+      assert_equal 'some_value', verifier.verify(message)
+
+      assert_raises(ActiveSupport::MessageVerifier::InvalidSignature) do
+        app.message_verifier.verify(message)
+      end
     end
 
     test "protect from forgery is the default in a new app" do
