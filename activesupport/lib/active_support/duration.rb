@@ -100,9 +100,15 @@ module ActiveSupport
       end
 
     private
+      # This method have to exist, because case in Ruby since 2.0.0-p353
+      # can't look up case equality method via method_missing.
+      def ===(other) #:nodoc:
+        value === other
+      end
 
       def method_missing(method, *args, &block) #:nodoc:
         value.send(method, *args, &block)
       end
   end
 end
+
